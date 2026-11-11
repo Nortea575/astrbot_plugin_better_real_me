@@ -1,0 +1,9 @@
+name: astrbot_plugin_better_real_me
+display_name: 更好的真实生活
+desc: 为角色提供持续的生活状态、日程、环境活动和自主生活模拟。
+version: 1.0.0
+author: Xing
+repo: https://github.com/Nortea575/astrbot_plugin_better_real_me
+astrbot_version: '>=4.29.3'
+support_platforms:
+  - aiocqhttp

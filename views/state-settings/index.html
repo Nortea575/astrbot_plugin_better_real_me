@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>更好的真实生活</title>
+  <link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="./life.css">
+  <link rel="stylesheet" href="./sharing.css">
+</head>
+<body>
+  <main class="app">
+    <header class="page-heading"><h1>更好的真实生活</h1><div class="sync-status" aria-live="polite"><span id="syncTime">正在同步…</span><button id="retrySyncButton" class="quiet small" type="button" hidden>重试</button></div></header>
+    <nav class="primary-tabs" role="tablist" aria-label="设置分类">
+      <button role="tab" aria-selected="true" id="settingsTab" aria-controls="settingsPanel" data-main-tab="states">状态设置</button>
+      <button role="tab" aria-selected="false" tabindex="-1" id="scheduleTab" aria-controls="schedulePanel" data-main-tab="schedule">日程设置</button>
+      <button role="tab" aria-selected="false" tabindex="-1" id="environmentTab" aria-controls="environmentPanel" data-main-tab="environment">环境设置</button>
+      <button role="tab" aria-selected="false" tabindex="-1" id="lifeTab" aria-controls="lifePanel" data-main-tab="life">生活预设</button>
+      <button role="tab" aria-selected="false" tabindex="-1" id="sharingTab" aria-controls="sharingPanel" data-main-tab="sharing">公网分享</button>
+    </nav>
+    <section id="settingsPanel" class="panel" role="tabpanel" aria-labelledby="settingsTab" data-main-panel="states">
+      <div class="secondary-tabs" id="stateTabs" role="tablist" aria-label="状态设置">
+        <button id="viewTab" role="tab" aria-selected="true" aria-controls="viewPanel">查看状态 <span id="stateCount" class="count">0</span></button>
+        <button id="createTab" role="tab" aria-selected="false" aria-controls="createPanel" tabindex="-1">新建状态</button>
+      </div>
+      <section id="viewPanel" role="tabpanel" aria-labelledby="viewTab">
+        <div id="connectionError" class="error-panel" hidden></div>
+        <div class="section-header"><div><h2>状态一览</h2><p>显示所有归属的运行状态；选择一项查看详情与操作。</p></div><button id="addCategoryButton" class="secondary">＋ 新建分类</button></div>
+        <div id="categoryFilters" class="filters" aria-label="按分类筛选"></div>
+        <div id="stateGroups" aria-live="polite"><div class="empty">正在读取状态…</div></div>
+      </section>
+      <section id="createPanel" role="tabpanel" aria-labelledby="createTab" hidden>
+        <div class="section-header editor-header"><div><h2 id="editorTitle">新建状态</h2><p id="editorHint">定义状态的含义、变化和表达，保存后立即生效。</p></div><button id="cancelEditButton" class="quiet">取消</button></div>
+        <div id="builderKindSwitch" class="builder-kind-switch" role="group" aria-label="创建类型">
+          <button id="baseKindButton" type="button" class="active" aria-pressed="true">基础状态</button>
+          <button id="groupKindButton" type="button" aria-pressed="false">综合指标</button>
+        </div>
+        <p id="builderModeHint" class="help builder-mode-hint">从名称、含义和初始值开始，再按需添加变化积木。</p>
+        <form id="stateForm" novalidate>
+          <section class="form-section state-basics">
+            <div class="state-compact-grid">
+              <label>名称<input name="name" required maxlength="120" placeholder="例如：饱腹度"></label>
+              <label>分类<select name="category"></select></label>
+              <label>归属<select name="scope"><option value="character">角色整体 · 跨会话共享</option><option value="conversation">当前会话 · 每群／私聊分别保存</option><option value="user">与用户的关系 · 每位用户分别保存</option></select></label>
+              <label>类型<select name="type"><option value="number">数值</option><option value="boolean">是非</option><option value="enum">选项</option><option value="text">文字</option></select></label>
+              <label>初始值<span id="initialField"></span><small>编辑初始值不会覆盖当前运行值。</small></label>
+              <label class="enum-only wide" hidden>枚举选项<textarea name="options" rows="2" placeholder="每行一个选项"></textarea></label>
+              <label class="wide">含义<textarea name="description" rows="2" placeholder="例如：表示角色吃过饭后还剩多少饱腹感。"></textarea></label>
+            </div>
+          </section>
+          <section class="builder-block-area" aria-labelledby="stateBlocksTitle">
+            <div class="builder-block-heading"><div><h3 id="stateBlocksTitle">添加积木</h3><p class="help">按需要组合时间变化、阶段表现、交互和事件。</p></div><div class="builder-block-actions" role="group" aria-label="添加基础状态积木"><button type="button" class="secondary small" data-add-block="time">时间变化</button><button type="button" class="secondary small" data-add-block="stages">阶段表现</button><button type="button" class="secondary small" data-add-block="interactions">交互</button><button type="button" class="secondary small" data-add-block="events">事件</button></div></div>
+            <div id="stateBuilderBlocks">
+              <details class="form-details builder-block" id="timeDetails" data-block="time" hidden>
+                <summary>时间变化</summary><div class="details-content"><div class="builder-block-controls"><button type="button" class="quiet small" data-action="block-up" data-block="time">上移</button><button type="button" class="quiet small" data-action="block-down" data-block="time">下移</button><button type="button" class="quiet small danger" data-action="remove-block" data-block="time">移除积木</button></div><label>每小时<span class="time-change-fields"><select name="rate_direction" aria-label="时间变化方向"><option value="increase">增加</option><option value="decrease">减少</option></select><input name="rate_amount" type="number" min="0" step="any" value="0" aria-label="每小时变化数量"></span></label></div>
+              </details>
+              <details class="form-details builder-block" id="stagesDetails" data-block="stages" hidden>
+                <summary>阶段表现</summary><div class="details-content"><div class="builder-block-controls"><button type="button" class="quiet small" data-action="block-up" data-block="stages">上移</button><button type="button" class="quiet small" data-action="block-down" data-block="stages">下移</button><button type="button" class="quiet small danger" data-action="remove-block" data-block="stages">移除积木</button></div><div class="section-heading"><p class="help">为不同数值或选项补充感受与表现。</p><button type="button" id="addStageButton" class="secondary small">添加阶段</button></div><div id="stages"></div></div>
+              </details>
+              <details class="form-details builder-block" id="interactionsDetails" data-block="interactions" hidden>
+                <summary>可用交互</summary><div class="details-content"><div class="builder-block-controls"><button type="button" class="quiet small" data-action="block-up" data-block="interactions">上移</button><button type="button" class="quiet small" data-action="block-down" data-block="interactions">下移</button><button type="button" class="quiet small danger" data-action="remove-block" data-block="interactions">移除积木</button></div><div class="section-heading"><p class="help">条件全部满足时才执行，多项状态变化一起结算。</p><button type="button" id="addInteractionButton" class="secondary small">添加交互</button></div><div id="interactions"></div></div>
+              </details>
+              <details class="form-details builder-block" id="eventsDetails" data-block="events" hidden>
+                <summary>事件</summary><div class="details-content"><div class="builder-block-controls"><button type="button" class="quiet small" data-action="block-up" data-block="events">上移</button><button type="button" class="quiet small" data-action="block-down" data-block="events">下移</button><button type="button" class="quiet small danger" data-action="remove-block" data-block="events">移除积木</button></div><div class="section-heading"><p class="help">按对话含义或进入阈值区间触发。</p><button type="button" id="addEventButton" class="secondary small">添加事件</button></div><div id="events"></div></div>
+              </details>
+            </div>
+            <p id="stateRuleSummary" class="rule-summary" aria-live="polite"></p>
+          </section>
+          <details class="form-details advanced-details" id="advancedDetails"><summary>高级设置</summary><div class="details-content">
+            <div class="advanced-grid"><label>技术标识<input name="id" required readonly pattern="[a-z][a-z0-9_]{0,63}"><small>自动生成并固定，编辑时不会改变。</small></label><label class="numeric-only">最小值<input name="min" type="number" step="any" placeholder="不限制"></label><label class="numeric-only">最大值<input name="max" type="number" step="any" placeholder="不限制"></label></div>
+            <div class="check-row state-check-row"><label><input type="checkbox" name="enabled" checked> 启用</label><label><input type="checkbox" name="inject" checked> 注入模型上下文</label><label><input type="checkbox" name="show_value" checked> 展示具体值</label></div>
+            <label>描述模板<textarea name="prompt" rows="2">{name}：{value}；{stage}。{description}</textarea><small>可使用 {name} 名称、{value} 当前值、{stage} 阶段、{description} 含义与阶段描述、{reason} 最近变化原因。</small></label>
+          </div></details>
+          <div id="formError" class="form-error" role="alert" hidden></div>
+          <footer class="form-footer"><span>状态值按所选归属保存。</span><button type="submit" id="saveStateButton" class="primary">保存基础状态</button></footer>
+        </form>
+        <form id="groupForm" novalidate hidden>
+          <section class="form-section state-basics"><div class="state-compact-grid">
+            <label>名称<input name="name" required maxlength="120" placeholder="例如：整体舒适度"></label><label>分类<select name="category"></select></label>
+            <label>归属<select name="scope"><option value="character">角色整体</option><option value="conversation">当前会话</option><option value="user">与用户的关系</option></select></label>
+            <label class="wide">含义<textarea name="description" rows="2" placeholder="说明这个指标综合反映什么。"></textarea></label>
+          </div></section>
+          <section class="builder-block-area group-factor-area" aria-labelledby="groupFactorsTitle">
+            <div class="builder-block-heading"><div><h3 id="groupFactorsTitle">指标来源</h3><p class="help">选择至少两个基础数值状态，再设定评分范围和相对权重。</p></div><button type="button" id="addGroupFactor" class="secondary">添加来源</button></div>
+            <p id="groupSourceHint" class="help" aria-live="polite"></p><div id="groupFactors"></div><div id="groupPreview" class="group-preview" aria-live="polite"></div>
+          </section>
+          <details class="form-details group-stages-details" id="groupStagesDetails"><summary>阶段表现</summary><div class="details-content"><div class="section-heading"><p class="help">根据 0–100 的综合结果描述不同阶段。</p><button type="button" id="addGroupStage" class="secondary small">添加阶段</button></div><div id="groupStages"></div></div></details>
+          <details class="form-details advanced-details" id="groupAdvancedDetails"><summary>高级设置</summary><div class="details-content">
+            <label>技术标识<input name="id" required readonly pattern="[a-z][a-z0-9_]{0,63}"><small>自动生成并固定，编辑时不会改变。</small></label>
+            <div class="check-row"><label><input type="checkbox" name="enabled" checked> 启用</label><label><input type="checkbox" name="inject" checked> 注入模型上下文</label><label><input type="checkbox" name="show_value" checked> 展示具体值</label></div>
+            <label>描述模板<textarea name="prompt" rows="2">{name}：{value}；{stage}。{description}</textarea><small>可使用 {name}、{value}、{stage}、{description} 和 {reason}。</small></label>
+          </div></details>
+          <div id="groupFormError" class="form-error" role="alert" hidden></div>
+          <footer class="form-footer"><span>预览按基础状态初始值计算；指标不会改变来源状态。</span><button type="submit" id="saveGroupButton" class="primary">保存综合指标</button></footer>
+        </form>
+      </section>
+    </section>
+    <section id="schedulePanel" class="panel" role="tabpanel" aria-labelledby="scheduleTab" data-main-panel="schedule" hidden>
+      <div class="secondary-tabs" id="scheduleTabs" role="tablist" aria-label="日程设置">
+        <button id="scheduleViewTab" role="tab" aria-selected="true" aria-controls="scheduleViewPanel">查看日程 <span id="scheduleCount" class="count">0 条</span></button>
+        <button id="scheduleCreateTab" role="tab" aria-selected="false" aria-controls="scheduleCreatePanel" tabindex="-1">新建日程</button>
+      </div>
+      <form id="timezoneForm" class="timezone-bar">
+        <label for="scheduleTimezone">日程时区（IANA）<input id="scheduleTimezone" name="timezone" type="text" list="timezoneOptions" required autocomplete="off" spellcheck="false" placeholder="Asia/Shanghai"></label>
+        <datalist id="timezoneOptions">
+          <option value="Asia/Shanghai"><option value="Asia/Taipei"><option value="Asia/Hong_Kong"><option value="Asia/Tokyo"><option value="Asia/Singapore"><option value="Asia/Seoul"><option value="UTC"><option value="Australia/Sydney"><option value="Europe/London"><option value="Europe/Paris"><option value="America/Los_Angeles"><option value="America/New_York">
+        </datalist>
+        <button id="saveTimezoneButton" type="submit" class="secondary">保存时区</button>
+        <span id="timezoneCurrent" class="timezone-current" aria-live="polite">所有日程使用此时区</span>
+        <p id="timezoneError" class="form-error timezone-error" role="alert" hidden></p>
+      </form>
+      <section id="scheduleViewPanel" role="tabpanel" aria-labelledby="scheduleViewTab">
+        <header class="section-header schedule-heading">
+          <div><h2>活动与日程</h2><p>查看当前与后续固定日程，并管理重复安排。</p></div>
+          <div class="schedule-toolbar"><button id="refreshScheduleButton" class="secondary">刷新日程</button><button id="addScheduleButton" class="primary">新建日程</button></div>
+        </header>
+        <div id="scheduleLoadError" class="error-panel schedule-error" role="alert" hidden><span></span><button type="button" id="retryScheduleButton" class="quiet">重试</button></div>
+        <div id="scheduleSummary" class="schedule-summary" aria-live="polite">
+          <div class="summary-item"><span class="summary-label">当前固定日程</span><strong id="activeScheduleName">正在读取…</strong><span id="activeScheduleTime" class="summary-detail"></span></div>
+          <div class="summary-item"><span class="summary-label">预计结束</span><strong id="activeScheduleEnd">—</strong><span id="activeScheduleEndDetail" class="summary-detail"></span></div>
+          <div class="summary-item"><span class="summary-label">下一固定日程</span><strong id="nextScheduleName">正在读取…</strong><span id="nextScheduleTime" class="summary-detail"></span></div>
+        </div>
+        <section class="schedule-list-section" aria-labelledby="scheduleListTitle">
+          <div class="schedule-list-heading"><h3 id="scheduleListTitle">已安排的活动</h3></div>
+          <p class="schedule-scope-note">手动日程配置在插件内共享。生活预设安排显示可执行时段，具体是否开始仍由动作条件决定；预设暂停时会标为暂停。</p>
+          <div class="schedule-category-toolbar"><div id="scheduleCategoryFilters" class="filters" aria-label="按日程分类筛选"></div><div class="schedule-category-actions" id="scheduleCategoryActions"></div><button id="addScheduleCategoryButton" type="button" class="secondary small">＋ 新建分类</button></div>
+          <div id="scheduleList" class="schedule-list" aria-live="polite"><div class="empty">正在读取日程…</div></div>
+        </section>
+      </section>
+      <section id="scheduleCreatePanel" role="tabpanel" aria-labelledby="scheduleCreateTab" hidden>
+        <header class="schedule-editor-heading"><div><h2 id="scheduleEditorTitle">新建日程</h2><p id="scheduleEditorHint">设置活动时间、重复日期和可选的数值覆盖。</p></div><button type="button" id="cancelScheduleEdit" class="quiet">取消</button></header>
+        <form id="scheduleForm">
+          <div class="schedule-form-grid">
+            <label>日程名称<input name="name" maxlength="120" required placeholder="例如：休息"></label>
+            <label>分类<select name="category"></select></label>
+            <label>重复<select name="dayPreset"><option value="daily">每天</option><option value="weekdays">工作日</option><option value="weekends">周末</option><option value="custom">自定义</option></select></label>
+            <label>开始时间<input name="start" type="time" required></label>
+            <label>结束时间<input name="end" type="time" required></label>
+            <fieldset id="customDays" class="custom-days wide" hidden>
+              <legend>重复星期</legend>
+              <div class="day-options">
+                <label><input type="checkbox" name="days" value="0"> 周一</label><label><input type="checkbox" name="days" value="1"> 周二</label><label><input type="checkbox" name="days" value="2"> 周三</label><label><input type="checkbox" name="days" value="3"> 周四</label><label><input type="checkbox" name="days" value="4"> 周五</label><label><input type="checkbox" name="days" value="5"> 周六</label><label><input type="checkbox" name="days" value="6"> 周日</label>
+              </div>
+            </fieldset>
+            <p id="scheduleTimeHint" class="help wide" aria-live="polite">开始和结束时间相同表示全天 24 小时；跨午夜重复星期按开始当天计算。</p>
+            <label class="wide">描述<textarea name="description" rows="2" maxlength="500" placeholder="可选，补充活动含义"></textarea></label>
+            <label class="schedule-enabled"><input type="checkbox" name="enabled" checked> 启用此日程</label>
+          </div>
+          <section class="schedule-rates" aria-labelledby="rateOverridesTitle">
+            <div class="schedule-rates-heading"><div><h3 id="rateOverridesTitle">数值状态覆盖</h3><p class="help">未添加覆盖的状态沿用基础变化速率；覆盖量可设为 0，暂停该状态的自然变化。</p></div><button type="button" id="addScheduleRate" class="secondary small">添加覆盖</button></div>
+            <div id="scheduleRateRows" class="schedule-rate-rows"><p class="help">未添加覆盖。</p></div>
+          </section>
+          <div id="scheduleFormError" class="form-error" role="alert" hidden></div>
+          <footer class="schedule-form-footer"><span>保存后才会更新日程运行配置。</span><div><button type="button" id="cancelScheduleEditFooter" class="secondary">取消</button><button type="submit" id="saveScheduleButton" class="primary">保存日程</button></div></footer>
+        </form>
+      </section>
+    </section>
+    <section id="environmentPanel" class="panel" role="tabpanel" aria-labelledby="environmentTab" data-main-panel="environment" hidden>
+      <div class="secondary-tabs" id="indoorTabs" role="tablist" aria-label="环境设置">
+        <button id="indoorViewTab" role="tab" aria-selected="true" aria-controls="indoorViewPanel">查看环境 <span id="indoorRoomCount" class="count">0 个房间组</span></button>
+        <button id="indoorCreateTab" role="tab" aria-selected="false" aria-controls="indoorCreatePanel" tabindex="-1">新建空间</button>
+      </div>
+      <section id="indoorViewPanel" role="tabpanel" aria-labelledby="indoorViewTab">
+        <div class="context-bar indoor-context-bar"><label for="indoorContextSelect">当前角色</label><select id="indoorContextSelect" aria-label="选择角色"></select><span id="indoorContextHint" aria-live="polite">等待真实 QQ 会话</span></div>
+        <div id="indoorLoadError" class="error-panel" role="alert" hidden><span></span><button type="button" id="retryIndoorButton" class="quiet">重试</button></div>
+        <div class="indoor-overview">
+          <section class="indoor-current" aria-labelledby="indoorCurrentTitle">
+            <h2 id="indoorCurrentTitle">当前位置</h2>
+            <p id="indoorCurrentRoom">尚未分配房间</p>
+          </section>
+        </div>
+        <div class="indoor-location-bar"><nav id="indoorBreadcrumbs" class="indoor-breadcrumbs" aria-label="房间组层级"></nav><button id="locateCurrentButton" class="quiet small" type="button">定位当前</button></div>
+        <div id="indoorNotice" class="indoor-notice" role="status" aria-live="polite" hidden></div>
+        <section class="indoor-map-section" aria-labelledby="indoorMapTitle">
+          <header class="section-header indoor-map-heading">
+            <div><h2 id="indoorMapTitle">街区</h2><p>地图只显示当前层的房间和下级房间组；图中位置不代表真实距离，可拖动查看。</p></div>
+            <div class="indoor-map-toolbar" role="group" aria-label="地图显示">
+              <button id="indoorZoomOut" class="secondary" type="button" aria-label="缩小地图">−</button>
+              <button id="indoorZoomIn" class="secondary" type="button" aria-label="放大地图">＋</button>
+              <button id="indoorMapFit" class="secondary" type="button">适应画布</button>
+            </div>
+          </header>
+          <div id="indoorMapViewport" class="indoor-map-viewport" tabindex="0" aria-label="房间关系图，可拖动浏览">
+            <svg id="indoorMap" class="indoor-map" role="group" aria-label="房间关系图" viewBox="0 0 800 360" hidden></svg>
+            <div id="indoorMapEmpty" class="indoor-map-empty"><p>这一层还没有房间或下级房间组</p><button type="button" class="primary" id="firstRoomButton">新建空间</button></div>
+          </div>
+        </section>
+        <div class="indoor-detail-grid">
+          <section class="indoor-room-detail" aria-labelledby="indoorSelectedTitle">
+            <div class="indoor-subheading"><div><h2 id="indoorSelectedTitle">选中的空间</h2><p id="indoorRoomCountHint">选择房间预览路线，或进入房间组查看下一层。</p></div></div>
+            <div id="indoorRoomDetails" class="indoor-room-details"><p class="empty">请选择一个房间。</p></div>
+            <div id="indoorRouteStatus" class="indoor-route-status" aria-live="polite" hidden></div>
+            <div class="indoor-route-actions"><button id="moveToRoomButton" class="primary" type="button" disabled>前往此处</button><span id="indoorRoutePath" class="indoor-route-path"></span></div>
+          </section>
+          <section class="indoor-connections" aria-labelledby="indoorConnectionsTitle">
+            <div class="indoor-subheading"><div><h2 id="indoorConnectionsTitle">连接关系</h2><p>连接当前层的房间或带入口的下级房间组。</p></div></div>
+            <form id="connectionForm" class="connection-form">
+              <label>从<select id="connectionFrom" name="a"></select></label>
+              <label>连接到<select id="connectionTo" name="b"></select></label>
+              <button id="addConnectionButton" class="secondary" type="submit">添加连接</button>
+            </form>
+            <div id="indoorConnectionError" class="form-error" role="alert" hidden></div>
+            <ul id="indoorConnectionList" class="indoor-connection-list" aria-live="polite"></ul>
+          </section>
+        </div>
+        <details class="indoor-management">
+          <summary>环境管理</summary>
+          <div class="indoor-management-body">
+            <form id="initialRoomForm" class="initial-room-control">
+              <label for="indoorInitialRoom">新角色的初始房间<select id="indoorInitialRoom" name="initial_room_id"></select></label>
+              <button id="saveInitialRoomButton" type="submit" class="secondary">保存初始房间</button>
+              <p>只影响新角色，不会移动已有角色。</p>
+            </form>
+            <section id="qqAccountsPanel" class="qq-accounts" aria-labelledby="qqAccountsTitle"><div class="qq-accounts-heading"><h2 id="qqAccountsTitle">已识别的 QQ 账号</h2><span id="qqAccountCount" class="count">0</span></div><div id="qqAccountList" class="qq-account-list" aria-live="polite"><p class="help">正在同步账号…</p></div></section>
+          </div>
+        </details>
+      </section>
+      <section id="indoorCreatePanel" role="tabpanel" aria-labelledby="indoorCreateTab" hidden>
+        <header class="section-header indoor-editor-heading"><div><h2 id="indoorEditorTitle">新建空间</h2><p id="indoorEditorHint">选择创建房间或房间组。</p></div><button type="button" id="cancelIndoorEdit" class="quiet">取消</button></header>
+        <label class="indoor-kind-label">空间类型<select id="indoorCreateKind"><option value="room">房间</option><option value="group">房间组</option></select></label>
+        <form id="indoorRoomForm">
+          <div class="indoor-room-form-grid">
+            <label>房间名称<input id="indoorRoomName" name="name" required maxlength="120" placeholder="例如：客厅"></label>
+            <label>所属房间组<select id="indoorRoomParent" name="group_id"></select></label>
+            <label class="wide">描述<textarea id="indoorRoomDescription" name="description" rows="3" maxlength="500" placeholder="可选，补充房间的用途或特点。"></textarea></label>
+          </div>
+          <details class="form-details indoor-id-details"><summary>高级设置</summary><div class="details-content"><label>房间 ID<input id="indoorRoomId" name="id" autocomplete="off" placeholder="留空时自动生成；创建后固定"><small>创建后固定，用于配置引用。</small></label></div></details>
+          <label class="indoor-initial-check"><input id="indoorSetInitial" name="initial" type="checkbox"> 将此房间设为新角色的初始房间</label>
+          <p class="help indoor-initial-help">初始房间只用于新角色，已有角色的位置不会改变。</p>
+          <div id="indoorRoomFormError" class="form-error" role="alert" hidden></div>
+          <footer class="indoor-form-footer"><span>保存后房间可在图中连接与查看。</span><div><button type="button" id="cancelIndoorEditFooter" class="secondary">取消</button><button type="submit" id="saveIndoorRoomButton" class="primary">保存房间</button></div></footer>
+        </form>
+        <form id="indoorGroupForm" hidden>
+          <div class="indoor-room-form-grid">
+            <label>房间组名称<input id="indoorGroupName" name="name" required maxlength="120" placeholder="例如：家"></label>
+            <label>上级房间组<select id="indoorGroupParent" name="parent_id"></select></label>
+            <label>默认入口房间<select id="indoorGroupEntry" name="entry_room_id"></select><small>只能选择此组及其下级组中的房间；入口不会改变新 QQ 的初始位置。</small></label>
+            <label class="wide">描述<textarea id="indoorGroupDescription" name="description" rows="3" maxlength="500" placeholder="可选，补充房间组的用途。"></textarea></label>
+          </div>
+          <details class="form-details indoor-id-details"><summary>高级设置</summary><div class="details-content"><label>房间组 ID<input id="indoorGroupId" name="id" autocomplete="off" placeholder="留空时自动生成；创建后固定"><small>创建后固定，用于配置引用。</small></label></div></details>
+          <div id="indoorGroupFormError" class="form-error" role="alert" hidden></div>
+          <footer class="indoor-form-footer"><span>房间组把房间与下级房间组组织在一起。</span><div><button type="button" class="secondary" data-cancel-indoor-edit>取消</button><button type="submit" id="saveIndoorGroupButton" class="primary">保存房间组</button></div></footer>
+        </form>
+      </section>
+    </section>
+    <section id="lifePanel" class="panel" role="tabpanel" aria-labelledby="lifeTab" data-main-panel="life" hidden>
+      <div id="lifeLoadError" class="error-panel" role="alert" hidden></div>
+      <section class="life-preset" aria-labelledby="lifePresetsTitle">
+        <header class="life-section-heading">
+          <div><h2 id="lifePresetsTitle">生活预设</h2><p>查看街区生活中的日常安排和生活空间。</p></div>
+        </header>
+        <section class="life-preset-preview" aria-live="polite" aria-labelledby="lifeTitle">
+          <header class="life-preset-heading">
+            <div><h3 id="lifeTitle">正在读取预设…</h3><p id="lifePresetDescription"></p></div>
+            <span id="lifePresetStatus" class="life-status">正在读取预设…</span>
+          </header>
+          <p id="lifePresetInstallNote" class="life-preset-install-note"></p>
+          <div id="lifePresetPlaces" class="life-preset-places"></div>
+          <p id="lifePresetConnections" class="life-preset-connections" hidden></p>
+        </section>
+        <p class="life-pause-note">下方可分别开关各 QQ 的自动生活，并指定其生活人格。首次启用时会添加街区空间和日常动作。</p>
+      </section>
+      <section class="life-accounts-section" aria-labelledby="lifeAccountsTitle">
+        <header class="life-section-heading"><div><h2 id="lifeAccountsTitle">真实 QQ 账号</h2><p>账号会从真实平台连接自动识别；不会创建 QQ、群、发送者或聊天上下文。</p></div><span id="lifeAccountCount" class="count">0</span></header>
+        <p id="lifeNoAccounts" class="empty life-empty" hidden>还没有识别到 QQ 账号。启动并连接 QQ 后会自动出现；在此之前不能启用生活预设。</p>
+        <div id="lifeAccountList" class="life-account-list" aria-live="polite"></div>
+      </section>
+      <details class="life-template" id="lifeTemplateDetails">
+        <summary class="life-template-summary"><span><strong id="lifeTemplateTitle">预设包含</strong><small>查看街区生活的状态、指标、生活窗口、房间组和动作。</small></span><span id="lifeContentCount" class="count">正在读取…</span></summary>
+        <div class="life-template-body"><div id="lifePresetContents" class="life-content-grid" aria-live="polite"><p class="help">正在读取预设内容…</p></div></div>
+      </details>
+      <section class="life-actions-section" aria-labelledby="lifeActionsTitle">
+        <header class="life-section-heading"><div><h2 id="lifeActionsTitle">生活动作</h2><p>编辑现有动作的目标房间、时长、触发条件和完成效果；保存只更新该动作。</p></div></header>
+        <div id="lifeActionCategories" class="filters" aria-label="按生活动作分类筛选"></div>
+        <div id="lifeActionList" class="life-action-list" aria-live="polite"><p class="empty">正在读取动作…</p></div>
+      </section>
+    </section>
+    <section id="sharingPanel" class="panel" role="tabpanel" aria-labelledby="sharingTab" data-main-panel="sharing" hidden>
+      <header class="sharing-heading">
+        <div><h2>公网分享</h2><p>只公开你选择的生活数据。绑定后仍可随时暂停公开或断开连接。</p></div>
+        <span id="sharingBadge" class="sharing-badge" data-state="off">未连接</span>
+      </header>
+      <p id="sharingError" class="sharing-error" role="alert" hidden></p>
+      <p id="sharingPendingDisable" class="sharing-pending" role="status" hidden>本地已停止发送数据，远端尚未确认关闭；服务恢复后会继续重试。</p>
+      <section class="sharing-block" aria-labelledby="sharingConnectionTitle">
+        <div class="sharing-section-copy"><h3 id="sharingConnectionTitle">连接真实 QQ</h3><p id="sharingConnectionHint">从分享管理页创建一次性绑定链接，然后粘贴到这里。</p></div>
+        <form id="sharingForm" autocomplete="off">
+          <label id="sharingBindingField" for="sharingBindingUrl">一次性绑定 URL
+            <input id="sharingBindingUrl" name="binding_url" type="url" inputmode="url" autocomplete="off" spellcheck="false" placeholder="https://分享服务地址/#bind=…" aria-describedby="sharingBindingHelp">
+            <small id="sharingBindingHelp">链接 20 分钟内有效；提交后会从此输入框清除。</small>
+          </label>
+          <label id="sharingAccountField" for="sharingAccount">真实 QQ 账号
+            <select id="sharingAccount" name="account_id" required></select>
+            <small id="sharingAccountHelp">当前有多个 QQ 账号时选择要连接的账号。</small>
+          </label>
+          <div id="sharingAccountDisplay" class="sharing-account-display" hidden>
+            <span id="sharingAccountAvatar" class="sharing-account-avatar" aria-hidden="true"></span>
+            <span class="sharing-account-copy"><strong id="sharingDetectedAccountName"></strong><small id="sharingDetectedAccountHint"></small></span>
+          </div>
+          <fieldset class="sharing-sections" aria-describedby="sharingSectionsHelp">
+            <legend>选择公开内容</legend>
+            <label><input type="checkbox" name="section" value="states"> <span><strong>状态</strong><small>角色整体的自定义状态</small></span></label>
+            <label><input type="checkbox" name="section" value="schedule"> <span><strong>日程</strong><small>固定日程和生活时段</small></span></label>
+            <label><input type="checkbox" name="section" value="location"> <span><strong>位置</strong><small>当前空间与房间</small></span></label>
+            <small id="sharingSectionsHelp">没有选择的内容不会发送到分享服务。</small>
+          </fieldset>
+          <button id="sharingSubmit" class="primary" type="submit">绑定并开启分享</button>
+        </form>
+      </section>
+      <section id="sharingManage" class="sharing-block" aria-labelledby="sharingManageTitle" hidden>
+        <div class="sharing-manage-heading">
+          <div class="sharing-section-copy"><h3 id="sharingManageTitle">分享管理</h3><p id="sharingAccountName"></p></div>
+          <div class="sharing-toggle-group"><span id="sharingToggleLabel">公开展示</span><button id="sharingToggle" class="sharing-toggle" type="button" role="switch" aria-labelledby="sharingToggleLabel" aria-checked="false" disabled><span></span></button></div>
+        </div>
+        <div id="sharingPublicLink" class="sharing-public-link" hidden>
+          <label for="sharingViewUrl">公开链接</label>
+          <div><input id="sharingViewUrl" type="url" readonly aria-label="公开链接"><button id="sharingCopyViewUrl" class="secondary" type="button">复制</button></div>
+        </div>
+        <p id="sharingSyncLine" class="sharing-sync" role="status"></p>
+        <p id="sharingLastError" class="sharing-last-error" hidden></p>
+        <button id="sharingDisconnect" class="quiet danger" type="button">断开连接</button>
+      </section>
+    </section>
+  </main>
+  <dialog id="modal"><form id="modalForm"><div class="modal-header"><h2 id="modalTitle"></h2><button type="button" id="closeModal" class="quiet" aria-label="关闭"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true" focusable="false"><path d="m4 4 8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button></div><div id="modalBody"></div><div id="modalError" class="form-error" role="alert" hidden></div><div class="modal-footer"><button type="button" id="cancelModal" class="secondary">取消</button><button type="submit" id="confirmModal" class="primary">保存</button></div></form></dialog>
+  <div id="toast" role="status" aria-live="polite" hidden></div>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

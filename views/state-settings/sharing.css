@@ -1,0 +1,58 @@
+#sharingPanel { display: grid; gap: 22px; }
+.sharing-heading, .sharing-manage-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; }
+.sharing-heading p, .sharing-section-copy p { margin-top: 5px; color: var(--muted); font-size: 13px; }
+.sharing-badge { flex: none; padding: 4px 10px; border-radius: 999px; background: var(--soft); color: var(--muted); font-size: 12px; line-height: 1.5; }
+.sharing-badge[data-state="on"] { background: #e1f2ee; color: #18594f; }
+.sharing-badge[data-state="waiting"], .sharing-badge[data-state="pending"] { background: #f4f0df; color: #625421; }
+.sharing-badge[data-state="paused"] { background: #edf0f2; color: #4f5961; }
+.sharing-block { display: grid; gap: 16px; padding-top: 20px; border-top: 1px solid var(--border); }
+.sharing-section-copy h3 { margin: 0; font-size: 15px; }
+#sharingForm { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); align-items: end; gap: 16px 20px; }
+#sharingForm > label { min-width: 0; }
+#sharingForm input[type="url"], #sharingForm select { min-height: 40px; }
+#sharingBindingField[hidden], #sharingAccountField[hidden], #sharingAccountDisplay[hidden] { display: none; }
+.sharing-account-display { display: flex; grid-column: 1 / -1; align-items: center; gap: 10px; min-height: 44px; }
+.sharing-account-avatar { display: grid; width: 38px; height: 38px; flex: none; overflow: hidden; place-items: center; border-radius: 50%; background: var(--soft); color: var(--accent); font-size: 15px; font-weight: 650; }
+.sharing-account-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.sharing-account-copy { display: grid; gap: 2px; }
+.sharing-account-copy strong { font-size: 14px; font-weight: 600; }
+.sharing-account-copy small { color: var(--muted); font-size: 12px; }
+.sharing-sections { display: grid; grid-column: 1 / -1; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px 18px; padding: 12px 14px 10px; margin: 0; border: 1px solid var(--border); border-radius: 8px; }
+.sharing-sections legend { padding: 0 5px; font-size: 13px; font-weight: 600; }
+.sharing-sections label { display: flex; min-width: 0; flex-direction: row; align-items: flex-start; gap: 8px; font-size: 13px; font-weight: 500; }
+.sharing-sections label input { flex: none; width: 16px; height: 16px; margin: 2px 0 0; accent-color: var(--accent); }
+.sharing-sections label span { display: grid; gap: 2px; }
+.sharing-sections label small { font-size: 12px; }
+#sharingSectionsHelp { grid-column: 1 / -1; }
+#sharingSubmit { justify-self: start; min-width: 166px; }
+.sharing-toggle-group { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 550; }
+.sharing-toggle { position: relative; width: 44px; min-width: 44px; height: 26px; min-height: 26px; padding: 2px; border: 1px solid var(--border); border-radius: 99px; background: var(--soft); transition: background-color .16s ease, border-color .16s ease; }
+.sharing-toggle span { display: block; width: 20px; height: 20px; border-radius: 50%; background: var(--surface); box-shadow: 0 1px 2px rgb(16 24 40 / 16%); transition: transform .16s ease; }
+.sharing-toggle[aria-checked="true"] { border-color: #28637c; background: #28637c; }
+.sharing-toggle[aria-checked="true"] span { transform: translateX(18px); }
+.sharing-toggle:disabled { opacity: .65; }
+.sharing-public-link { display: grid; gap: 6px; max-width: 760px; }
+.sharing-public-link > label { font-size: 13px; font-weight: 550; }
+.sharing-public-link > div { display: flex; min-width: 0; }
+.sharing-public-link input { min-width: 0; border-radius: 8px 0 0 8px !important; }
+.sharing-public-link button { flex: none; min-width: 68px; border-radius: 0 8px 8px 0; box-shadow: none; }
+.sharing-sync, .sharing-last-error { color: var(--muted); font-size: 12px; overflow-wrap: anywhere; }
+.sharing-last-error { color: var(--error); }
+#sharingDisconnect { justify-self: start; min-height: 34px; padding-inline: 2px; }
+.sharing-error, .sharing-pending { padding: 10px 12px; margin: 0; border: 1px solid var(--error); border-radius: 8px; color: var(--error); font-size: 13px; overflow-wrap: anywhere; }
+.sharing-pending { border-color: #c8b45e; background: #faf7e9; color: #514518; }
+
+@media (max-width: 720px) {
+  #sharingPanel { gap: 18px; }
+  .sharing-heading, .sharing-manage-heading { flex-direction: column; gap: 10px; }
+  #sharingForm { grid-template-columns: 1fr; gap: 14px; }
+  .sharing-sections { grid-column: 1; grid-template-columns: 1fr; gap: 12px; }
+  #sharingSectionsHelp { grid-column: 1; }
+  #sharingSubmit { width: 100%; min-height: 44px; }
+  .sharing-toggle-group { align-self: stretch; justify-content: space-between; min-height: 44px; }
+  #sharingDisconnect { min-height: 44px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sharing-toggle, .sharing-toggle span { transition: none; }
+}
